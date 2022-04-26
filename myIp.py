@@ -96,11 +96,6 @@ while True:
                 json.dump(data, myIp)
                 myIp.close()
                 print("Ip didn't change. Ip: " + ip + " Hour: " + oldDict["dtOfChange"])
-                bodyValue1 = [[oldDict["dtOfChange"], ip]]
-                request = sheet.values().append(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range="IpHist!A:B",
-                                    valueInputOption="USER_ENTERED",
-                                    body={"values": bodyValue1}).execute()
             else:
                 data2 = {"myIp": ip, "dtOfChange": dt_string}
                 myIp2 = open("myip.json", "w")

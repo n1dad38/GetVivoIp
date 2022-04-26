@@ -7,4 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN apt update && apt install tzdata -y
+ENV TZ="America/Sao_Paulo"
+
 CMD [ "python", "./myIp.py" ]
