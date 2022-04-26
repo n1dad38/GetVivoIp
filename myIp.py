@@ -3,8 +3,24 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from datetime import datetime
-from time import sleep
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from decouple import config
+
+SERVICE_ACCOUNT_FILE = 'keys.json'
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+creds = None
+creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+# The ID and range of a sample spreadsheet.
+SAMPLE_SPREADSHEET_ID = config("SHEET_ID")
+
+
 while True:
+
+
     html = requests.get("http://192.168.15.1/webClient/index.html").content
 
     soup = BeautifulSoup(html, 'html.parser')
@@ -21,6 +37,12 @@ while True:
 # entering try block
 
     try:
+
+        service = build('sheets', 'v4', credentials=creds)
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+
 
         # opening and reading the file
         file_read = open("request.txt", "r")
@@ -74,12 +96,22 @@ while True:
                 json.dump(data, myIp)
                 myIp.close()
                 print("Ip didn't change. Ip: " + ip + " Hour: " + oldDict["dtOfChange"])
+                bodyValue1 = [[oldDict["dtOfChange"], ip]]
+                request = sheet.values().append(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range="IpHist!A:B",
+                                    valueInputOption="USER_ENTERED",
+                                    body={"values": bodyValue1}).execute()
             else:
                 data2 = {"myIp": ip, "dtOfChange": dt_string}
                 myIp2 = open("myip.json", "w")
                 json.dump(data2, myIp2)
                 myIp2.close()
                 print("Ip Changed. Ip: " + ip + " Hour: " + dt_string)
+                bodyValue2 = [[dt_string, ip]]
+                request = sheet.values().append(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range="IpHist!A:B",
+                                    valueInputOption="USER_ENTERED",
+                                    body={"values": bodyValue2}).execute()
  # entering except block
 # if input file doesn't exist
     except :
